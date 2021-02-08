@@ -165,8 +165,8 @@ class InstaBot:
                                      'div/div/ul/li[2]/div/div/div/div[1]/img'
                     path_img_src_3 = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div[1]/' \
                                      'img'
-                    path_video_src = '/html/body/div[1]/section/main/div/div[1]/' \
-                                     'article/div[2]/div/div/div[1]/div/div/video'
+                    path_video_src = '/html/body/div[4]/div[2]/div/article/div[2]/div/div/div[1]/div/div/video'
+                    path_video_src_2 = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
 
 
                     if self.xpath_find_element(path_img_src):
@@ -191,23 +191,30 @@ class InstaBot:
                             img_file.write(get_img.content)
                         print(f'Img downloaded  at post: {url}')
                     elif self.xpath_find_element(path_video_src):
-                        video_src_url = browser.find_element_by_xpath(path_video_src).get_attribute('src')
-                        # list_img_and_video_urls.append(video_src_url)
-                        # get_video = requests.get(video_src_url, stream=True)
-                        # with open(f"{user_name}/{user_name}_{post_name}_video.mp4", "wb") as video_file:
-                        #     for chunk in get_video.iter_content(chunk_size=1024 * 1024):
-                        #         if chunk:
-                        #             video_file.write(chunk)
-                        # print(f'Video downloaded  at post: {url}')
-                        print(f'This is video, we continue: {path_video_src}')
-                        print(f'His url for download: {video_src_url}')
-                        continue
+                        try:
+                            video_src_url = browser.find_element_by_xpath(path_video_src).get_attribute('src')
+                            list_img_and_video_urls.append(video_src_url)
+                            get_video = requests.get(video_src_url)
+                            with open(f"{user_name}/{user_name}_{post_name}_video.mp4", "wb") as video_file:
+                                video_file.write(get_video.content)
+                            print(f'Video downloaded  at post: {url}')
+                        except Exception as ex:
+                            print(ex)
+                    elif self.xpath_find_element(path_video_src_2):
+                        try:
+                            video_src_url = browser.find_element_by_xpath(path_video_src_2).get_attribute('src')
+                            list_img_and_video_urls.append(video_src_url)
+                            get_video = requests.get(video_src_url)
+                            with open(f"{user_name}/{user_name}_{post_name}_video.mp4", "wb") as video_file:
+                                video_file.write(get_video.content)
+                            print(f'Video downloaded  at post: {url}')
+                        except Exception as ex:
+                            print(ex)
                     else:
                         print(f"Sorry.Having problems with the content on this link {url}")
                         list_img_and_video_urls.append(f'Having problems with the content on this link: {url}')
                 except Exception as ex:
                     print(ex)
-                    # self.close_browser()
             print(len(posts_urls_list))
             self.close_browser()
         with open(f'Img and video urls for download.txt', 'a') as file:
@@ -227,5 +234,5 @@ class InstaBot:
 serg = InstaBot('parsing_to_order', 'parsing')
 serg.login()
 serg.download_user_content('https://www.instagram.com/mashka192/')
-# serg.download_user_content('https://www.instagram.com/mashkerya/')
+
 
