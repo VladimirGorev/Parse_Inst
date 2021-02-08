@@ -149,7 +149,7 @@ class InstaBot:
         file_name = user_page.split('/')[-2] + '  :  urls posts'
         list_img_and_video_urls = []
         if os.path.exists(f"{user_name}"):
-            print("Папка уже существует!")
+            print("A folder with the same name already exists")
         else:
             os.mkdir(user_name)
 
