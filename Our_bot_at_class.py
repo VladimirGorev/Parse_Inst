@@ -149,8 +149,9 @@ class InstaBot:
         file_name = user_page.split('/')[-2] + '  :  urls posts'
         list_img_and_video_urls = []
         if os.path.exists(f"{user_name}"):
-            print("A folder with the same name already exists")
+            print(f"A folder {user_name} with the same name already exists")
         else:
+            print(f'Create new dir user: {user_name}')
             os.mkdir(user_name)
 
         with open(f'{file_name}.txt') as file:
@@ -167,8 +168,6 @@ class InstaBot:
                                      'img'
                     path_video_src = '/html/body/div[4]/div[2]/div/article/div[2]/div/div/div[1]/div/div/video'
                     path_video_src_2 = '/html/body/div[1]/section/main/div/div[1]/article/div[2]/div/div/div[1]/div/div/video'
-
-
                     if self.xpath_find_element(path_img_src):
                         img_src_url = browser.find_element_by_xpath(path_img_src).get_attribute('src')
                         list_img_and_video_urls.append(img_src_url)
@@ -215,24 +214,107 @@ class InstaBot:
                         list_img_and_video_urls.append(f'Having problems with the content on this link: {url}')
                 except Exception as ex:
                     print(ex)
-            print(len(posts_urls_list))
             self.close_browser()
         with open(f'Img and video urls for download.txt', 'a') as file:
             for i in list_img_and_video_urls:
                 file.write(i + '\n')
 
-
-
-
-
-
-
-
-
+    def get_all_followers(self, user_page):
+        """This method allows you to go to the page you specified, copy all the person's subscribers to a file,
+         go to each page and subscribe to it.For correct operation, the number of subscribers to the page you
+         specified should not exceed 1000."""
+        browser = self.browser
+        browser.get(user_page)
+        time.sleep(3)
+        page_not_found = '/html/body/div[1]/section/main/div/h2'
+        user_name = user_page.split('/')[-2]
+        if os.path.exists(f"{user_name}"):
+            print(f"A folder{user_name} with the same name already exists")
+        else:
+            print(f'Create new dir user: {user_name}')
+            os.mkdir(user_name)
+        if self.xpath_find_element(page_not_found):
+            print(f'No such user {user_page} exist. Check the correctness of the entered url')
+            self.close_browser()
+        else:
+            print(f'User page is find. Create him new dir {user_name}')
+        followers_button = browser.find_element_by_xpath('/html/body/div[1]/section/main/div/'
+                                                         'header/section/ul/li[2]/a/span')
+        followers_count = int(followers_button.text)
+        time.sleep(3)
+        print(f'Count followers user {user_name} is {followers_count}')
+        scrolls = int(math.ceil(followers_count/12))
+        print(f'Count scrolls follower list is {scrolls}')
+        time.sleep(3)
+        followers_button.click()
+        time.sleep(3)
+        followers_url = browser.find_element_by_xpath('/html/body/div[4]/div/div/div[2]')
+        try:
+            for i in range(1, 3):
+                browser.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", followers_url)
+                time.sleep(random.randrange(2, 4))
+                print(f"Scroll #{i}")
+            all_urls_div = browser.find_elements_by_tag_name("a")
+            followers_list_raw = []
+            followers_set = set()
+            for url in all_urls_div:
+                try:
+                    url = url.get_attribute("href")
+                    url_split = url.split('/')
+                    if len(url_split) != 5:
+                        continue
+                    else:
+                        followers_list_raw.append(url)
+                except Exception as ex:
+                    print(ex)
+            followers_list = followers_list_raw[4:]
+            for follower in followers_list:
+                followers_set.add(follower)
+            with open(f"{user_name}/{user_name}_followers_list.txt", "a") as text_file:
+                for link in followers_set:
+                    text_file.write(link+'\n')
+            with open(f"{user_name}/{user_name}_followers_list.txt") as text_file:
+                users_urls = text_file.readlines()
+                for user in users_urls:
+                    browser.get(user)
+                    time.sleep(3)
+                    try:
+                        already_subscribed = '/html/body/div[1]/section/main/div/header/section/div[1]/div[1]/' \
+                                             'div/div[2]/div/span/span[1]/button/div/span'
+                        follow_btn = '/html/body/div[1]/section/main/div/header/section/div[1]/div[1]/div/div/div/' \
+                                     'span/span[1]/button'
+                        follow_btn2 = '/html/body/div[1]/section/main/div/header/section/div[1]/div[1]/div/div/button'
+                        if self.xpath_find_element(already_subscribed):
+                            print(f'We already subscribed at {user}')
+                            continue
+                        elif self.xpath_find_element(follow_btn):
+                            follow = browser.find_element_by_xpath(follow_btn)
+                            time.sleep(2)
+                            print(f'We subscribed at {user}')
+                            follow.click()
+                            with open('People_we_subscribed_to .txt', 'a') as file:
+                                file.write(user)
+                            time.sleep(3)
+                        elif self.xpath_find_element(follow_btn2):
+                            follow = browser.find_element_by_xpath(follow_btn2)
+                            time.sleep(2)
+                            print(f'We subscribed at {user}')
+                            follow.click()
+                            with open('People_we_subscribed_to .txt', 'a') as file:
+                                file.write(user)
+                            time.sleep(3)
+                        else:
+                            print(f'Something went wrong with this link {user} ')
+                    except Exception as ex:
+                        print(ex)
+        except Exception as ex:
+            print(ex)
+            self.close_browser()
 
 
 serg = InstaBot('parsing_to_order', 'parsing')
-serg.login()
-serg.download_user_content('https://www.instagram.com/mashka192/')
-
+# serg.login()
+# serg.download_user_content('https://www.instagram.com/mashka192/')
+# serg.download_user_content('https://www.instagram.com/mashkerya/')
+# serg.get_all_followers('https://www.instagram.com/marta196/')
 
