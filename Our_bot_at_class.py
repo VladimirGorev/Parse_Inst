@@ -250,7 +250,7 @@ class InstaBot:
         time.sleep(3)
         followers_url = browser.find_element_by_xpath('/html/body/div[4]/div/div/div[2]')
         try:
-            for i in range(1, 3):
+            for i in range(1, scrolls):
                 browser.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", followers_url)
                 time.sleep(random.randrange(2, 4))
                 print(f"Scroll #{i}")
@@ -310,6 +310,7 @@ class InstaBot:
         except Exception as ex:
             print(ex)
             self.close_browser()
+
 
 
 serg = InstaBot('parsing_to_order', 'parsing')
